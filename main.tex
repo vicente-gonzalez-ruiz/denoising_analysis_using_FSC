@@ -82,7 +82,46 @@ $\text{metric}(\mathbf{Y}, \hat{\mathbf{Y}})$ because $\mathbf{N}$ can
 only be estimated and therefore, it is impossible to obtain
 $\mathbf{X}$ from Eq.~\ref{eq:noisy_model}.
 
-\section{Gaussian filtering}
+\section{GD (Gaussian Denoising)}
+
+Gaussian denoising works weight-averaging signal samples. Under the
+assumption that most of the energy (and information) is concentrated
+in the low frequencies, a Gaussian filter is defined by
+\begin{equation}
+  \mathbf{h} = \{\mathbf{h}_i\} = \frac{1}{\sqrt{2\pi}\sigma}e^{{-i}^2/(2\sigma^2)},
+\end{equation}
+where $\sigma$ is the standard deviation of a normal distribution. The
+filtering is represented by
+\begin{equation}
+  \hat{\mathbf{Y}} = \mathbf{Y}*\mathbf{h},
+  \label{eq:GF}
+\end{equation}
+where $\cdot*\cdot$ represent the convolution of digital signals.
+
+Multidimensional Gaussian filtering is separable, which means that we
+can apply the 1D filter to all the dimensions of the signal.
+
+GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$ results in a
+lower the cut-off frequency of the filter.
+
+\section{SDPG (Structure-Preserving Gaussian Denoising) \cite{gonzalez2023structure}}
+
+In SDPG the Eq.~\ref{eq:GF} holds, but using an 2D OF (Optical Flow) estimator
+the signal samples are extracted from warped images generated
+after projecting the original images with the vectors fields produced
+the estimator. This decreases the bluring in those areas where the
+estimator is able to detect structures.
+
+The estimator requires the following parameters to be defined:
+\begin{enumerate}
+\item $\sigma$
+\item $w$
+\item $l$
+\end{enumerate}
+  
+\section{CryoCARE}
+
+\section{}
 
 \bibliographystyle{plain}
 \bibliography{signal_processing}
