@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\title{Analysis of the performance of volume denoisers using FSC (Fourier Shell Correpation) curves}
+
+\author{Vicente González Ruiz and José Jesús Fernández Rodríguez}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  The FSC curve is a measure of the similarity between two 3D volumes
+  represented in the Fourier domain. Each point of the curve
+  prepresents the correlation between two ``shells'' of Fourier
+  coefficients of both volumes. An advantage of the FSC over other
+  similarity metrics such as the
+  \href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
+    Squared Error)}, the
+  \href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
+    (Structural Similarity Index Measure)} and the
+  \href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
+    (Pearson Correlation Coefficient)} is that FSC values depend on
+  the frequency, and this can be interesting in some scenarios, such
+  as structural biology. In this work we analyze the effect of some
+  denoising algorithms applied to noisy electron microscopy volumes,
+  and analyze this effect using the FSC curve, the MSE, and the SSIM.
+\end{abstract}
+
+\section{Definitions}
+\begin{enumerate}
+  \item 
+Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
+\begin{equation}
+  \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
+\end{equation}
+where $N$ is the number of samples in one of the volumes (that must
+have the same number of samples).
+
+\item
+After splitting the volume into $M$ non overlapped sub-vols,
+\begin{equation}
+  % \text{SSIM}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N\frac{(2\overline{\mathbf{x}}_i\overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i}\mathbf{y}_i}+c_2){(\overline{\mathbf{x}_i^2+\mathbf{y_i}^2+c_1)(\sigma^2_\mathbf{x}_i+\sigma^2_{\mathbf{y}_i + c_2)},
+  \text{SSIM}(\mathbf{X}, \mathbf{Y}) = \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
+\end{equation}
+where $\overline{x}i$ is the mean of the $i$-th sub-vol of
+$\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
+for $\mathbf{Y}$), $\sigma_{\mathbf{x}_i\mathbf{y}_i}$ is the
+covariance of both sub-vols, $c_1=(k_1L) ²$, $c_2=(k_2L) 2$ are two
+variables to stabilize the division with weak denominator, $L$ is the
+dynamic range of the voxel values, with constants with default vales
+$K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
+sub-vols is $7\times 7\times 7$.
+
+\item
+The PPC is given by
+\begin{equation}
+  % \text{PPC}(\mathbf{X},\mathbf{Y}) = \frac{\sum_i(\mathbf{X}_i-\overline{\mathbf{X})(\mathbf{Yç_i-\overline{\mathbf{Y}}}{\sqrt{\sim_i(\mathbf{X}_i-\overline{X})^2\sqrt{\sum_i(\mathbf{Y}_i-\mathb{Y}_i-\overline{\mathbf{Y})^2}}}
+  % \text{PPC}(\mathbf{X}, \mathbf{Y}) = \frac{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2} \sqrt{\sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
+  \text{PPC}(\mathbf{X}, \mathbf{Y})  = \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
+\end{equation}
+
+\item
+A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
+\begin{equation}
+  %\text{FSC}(\mathbf{X},\mathbf{Y};r) = \frac{\sum_{i \in S_r}\mathcal{F}(\mathbf{X}_i)\sum_{i \in S_r}\mathcal{F}(\mathbf{Y})_i^*}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2} \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}}
+\text{FSC}(\mathbf{X}, \mathbf{Y}; r) = \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
+\end{equation}
+where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain) of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$, and $\cdot^*$ denotes the complex conjugate of the complex number $\cdot$.
+\end{enumerate}
+
+\section{Noise model}
+
+Being $\mathbf{X}$ the original (without noise, ground truth usually unknown) volume,
+\begin{equation}
+  \mathbf{Y} = \mathbf{X} + \mathbf{N}
+\end{equation}
+is the noisy (known) volume, where $\mathbf{N}$ is the added noise. We
+assume that $\mathbf{X}$ and $\mathbf{N}$ are statistically
+independent.
+
+\bibliographystyle{plain}
+\bibliography{signal_processing}
+
+\end{document}
