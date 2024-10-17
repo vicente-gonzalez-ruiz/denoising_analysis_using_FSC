@@ -40,8 +40,7 @@ have the same number of samples).
 \item
 After splitting the volume into $M$ non overlapped sub-vols,
 \begin{equation}
-  % \text{SSIM}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N\frac{(2\overline{\mathbf{x}}_i\overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i}\mathbf{y}_i}+c_2){(\overline{\mathbf{x}_i^2+\mathbf{y_i}^2+c_1)(\sigma^2_\mathbf{x}_i+\sigma^2_{\mathbf{y}_i + c_2)},
-  \text{SSIM}(\mathbf{X}, \mathbf{Y}) = \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
+  \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
 \end{equation}
 where $\overline{x}i$ is the mean of the $i$-th sub-vol of
 $\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
@@ -55,18 +54,18 @@ sub-vols is $7\times 7\times 7$.
 \item
 The PPC is given by
 \begin{equation}
-  % \text{PPC}(\mathbf{X},\mathbf{Y}) = \frac{\sum_i(\mathbf{X}_i-\overline{\mathbf{X})(\mathbf{Yç_i-\overline{\mathbf{Y}}}{\sqrt{\sim_i(\mathbf{X}_i-\overline{X})^2\sqrt{\sum_i(\mathbf{Y}_i-\mathb{Y}_i-\overline{\mathbf{Y})^2}}}
-  % \text{PPC}(\mathbf{X}, \mathbf{Y}) = \frac{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2} \sqrt{\sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
-  \text{PPC}(\mathbf{X}, \mathbf{Y})  = \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
+  \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
 \end{equation}
 
 \item
 A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
 \begin{equation}
-  %\text{FSC}(\mathbf{X},\mathbf{Y};r) = \frac{\sum_{i \in S_r}\mathcal{F}(\mathbf{X}_i)\sum_{i \in S_r}\mathcal{F}(\mathbf{Y})_i^*}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2} \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}}
-\text{FSC}(\mathbf{X}, \mathbf{Y}; r) = \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
+\text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
 \end{equation}
-where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain) of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$, and $\cdot^*$ denotes the complex conjugate of the complex number $\cdot$.
+where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
+of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
+$\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
+$\cdot^*$ denotes the complex conjugate of $\cdot$.
 \end{enumerate}
 
 \section{Noise model}
@@ -74,10 +73,16 @@ where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain) of the surf
 Being $\mathbf{X}$ the original (without noise, ground truth usually unknown) volume,
 \begin{equation}
   \mathbf{Y} = \mathbf{X} + \mathbf{N}
+  \label{eq:noisy_model}
 \end{equation}
-is the noisy (known) volume, where $\mathbf{N}$ is the added noise. We
-assume that $\mathbf{X}$ and $\mathbf{N}$ are statistically
-independent.
+is the noisy (known) volume, where $\mathbf{N}$ is the added (unknown)
+noise. We assume that $\mathbf{X}$ and $\mathbf{N}$ are statistically
+independent. The idea is compute
+$\text{metric}(\mathbf{Y}, \hat{\mathbf{Y}})$ because $\mathbf{N}$ can
+only be estimated and therefore, it is impossible to obtain
+$\mathbf{X}$ from Eq.~\ref{eq:noisy_model}.
+
+\section{Gaussian filtering}
 
 \bibliographystyle{plain}
 \bibliography{signal_processing}
