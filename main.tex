@@ -101,8 +101,9 @@ where $\cdot*\cdot$ represent the convolution of digital signals.
 Multidimensional Gaussian filtering is separable, which means that we
 can apply the 1D filter to all the dimensions of the signal.
 
-GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$ results in a
-lower the cut-off frequency of the filter.
+GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$
+results in a lower the cut-off frequency of the filter. $\sigma$ is
+not (objectively) optimizable.
 
 \section{SDPG (Structure-Preserving Gaussian Denoising) \cite{gonzalez2023structure}}
 
@@ -114,9 +115,12 @@ estimator is able to detect structures.
 
 The estimator requires the following parameters to be defined:
 \begin{enumerate}
-\item $\sigma$
-\item $w$
-\item $l$
+\item $\sigma$, with an impact similar to the case of GD.
+\item $w$, the size of a 2D window used to analyze the 2D slices. If
+  $w$ is large, the estimator is less sensitive to the noise but also
+  the small structures are ignored.
+\item $l$, that controls the maximun displacements for the
+  estimator. Higher $l$ values increase blurring.
 \end{enumerate}
   
 \section{CryoCARE}
