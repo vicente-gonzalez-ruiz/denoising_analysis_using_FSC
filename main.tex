@@ -2,7 +2,7 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 
-\title{Analysis of the performance of volume denoisers using FSC (Fourier Shell Correpation) curves}
+\title{Denoising of Electron Microscopy 3D Data}
 
 \author{Vicente González Ruiz and José Jesús Fernández Rodríguez}
 
@@ -10,26 +10,21 @@
 \maketitle
 
 \begin{abstract}
-  The FSC curve is a measure of the similarity between two 3D volumes
-  represented in the Fourier domain. Each point of the curve
-  prepresents the correlation between two ``shells'' of Fourier
-  coefficients of both volumes. An advantage of the FSC over other
-  similarity metrics such as the
-  \href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
-    Squared Error)}, the
-  \href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
-    (Structural Similarity Index Measure)} and the
-  \href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
-    (Pearson Correlation Coefficient)} is that FSC values depend on
-  the frequency, and this can be interesting in some scenarios, such
-  as structural biology. In this work we analyze the effect of some
-  denoising algorithms applied to noisy electron microscopy volumes,
-  and analyze this effect using the FSC curve, the MSE, and the SSIM.
+  We analyze the effect of some denoising algorithms (GD, SPGD, AND,
+  Cryo-CARE, BM4D and RSVD) applied to electron microscopy volumes,
+  using different objective metrics (MSE, PPC, SSIM and FSC). Such
+  volumes are noisy, and we don't have a denoised version of them to
+  compare with. For this reason, for the same 
 \end{abstract}
 
-\section{Definitions}
-\begin{enumerate}
-  \item 
+\section{Metrics}
+
+The following metrics have been used to compare the noisy (original)
+volume and the denoised volume.
+
+\subsection{\href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
+    Squared Error)}}
+
 Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
 \begin{equation}
   \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
@@ -37,7 +32,9 @@ Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
 where $N$ is the number of samples in one of the volumes (that must
 have the same number of samples).
 
-\item
+\subsection{\href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
+    (Structural Similarity Index Measure)}}
+
 After splitting the volume into $M$ non overlapped sub-vols,
 \begin{equation}
   \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
@@ -51,13 +48,23 @@ dynamic range of the voxel values, with constants with default vales
 $K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
 sub-vols is $7\times 7\times 7$.
 
-\item
+\subsection{\href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
+    (Pearson Correlation Coefficient)}}
 The PPC is given by
 \begin{equation}
   \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
 \end{equation}
 
-\item
+\subsection{FSC (Fourier Shell Correlation) curve}
+The FSC curve is a measure of the similarity between two 3D volumes
+represented in the Fourier domain \cite{verbeke2024self}. Each point
+of the curve prepresents the correlation between two ``shells'' of
+Fourier coefficients of both volumes. An advantage of the FSC over
+other similarity metrics such as the MSE, the SSIM and the PPC is that
+FSC values depend on the frequency, and this can be interesting in
+some scenarios, such as microscopy, where the resolution of the
+microscope if finite and known.
+
 A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
 \begin{equation}
 \text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
@@ -66,9 +73,20 @@ where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
 of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
 $\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
 $\cdot^*$ denotes the complex conjugate of $\cdot$.
-\end{enumerate}
 
-\section{Noise model}
+In some fields such ashsingle particle electron cryo-microscopy
+(cryo-EM), the FSC curve has become the universal resolution metric
+and is used to assess the quality of a 3-D reconstruction
+\cite{rosenthal2003optimal,scheres2012prevention}.
+
+It is possible to compute the Self FSC (SFSC) by subsampling the data
+\cite{koho2019fourier}, for example, splitting the volume in odd and
+even slices, in each dimension (resulting a total of 6 subvolumes),
+computing the FSC and averaging the correlations
+\cite{verbeke2024self}. Another approach can split the data into two
+random half volumes \cite{verbeke2024self}.
+
+\section{Noise modeling}
 
 Being $\mathbf{X}$ the original (without noise, ground truth usually unknown) volume,
 \begin{equation}
