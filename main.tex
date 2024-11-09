@@ -95,10 +95,9 @@ Being $\mathbf{X}$ the original (without noise, ground truth usually unknown) vo
 \end{equation}
 is the noisy (known) volume, where $\mathbf{N}$ is the added (unknown)
 noise. We assume that $\mathbf{X}$ and $\mathbf{N}$ are statistically
-independent. The idea is compute
-$\text{metric}(\mathbf{Y}, \hat{\mathbf{Y}})$ because $\mathbf{N}$ can
-only be estimated and therefore, it is impossible to obtain
-$\mathbf{X}$ from Eq.~\ref{eq:noisy_model}.
+independent (nothing can said about $\mathbf{N}$ known $\mathbf{X}$,
+and viceversa). Therefore, it is impossible to obtain $\mathbf{X}$
+from $\mathbf{Y}$.
 
 \section{GD (Gaussian Denoising)}
 
@@ -106,22 +105,30 @@ Gaussian denoising works weight-averaging signal samples. Under the
 assumption that most of the energy (and information) is concentrated
 in the low frequencies, a Gaussian filter is defined by
 \begin{equation}
-  \mathbf{h} = \{\mathbf{h}_i\} = \frac{1}{\sqrt{2\pi}\sigma}e^{{-i}^2/(2\sigma^2)},
+  \mathbf{h}(\sigma) = \{\mathbf{h}_i(\sigma)\} = \frac{1}{\sqrt{2\pi}\sigma}e^{{-i}^2/(2\sigma^2)},
 \end{equation}
-where $\sigma$ is the standard deviation of a normal distribution. The
-filtering is represented by
+where $\sigma$ is the standard deviation of a normal
+distribution. 1D filtering is represented by
 \begin{equation}
-  \hat{\mathbf{Y}} = \mathbf{Y}*\mathbf{h},
+  \hat{\mathbf{Y}}(\sigma) = \mathbf{Y}*\mathbf{h}(\sigma),
   \label{eq:GF}
 \end{equation}
 where $\cdot*\cdot$ represent the convolution of digital signals.
 
-Multidimensional Gaussian filtering is separable, which means that we
-can apply the 1D filter to all the dimensions of the signal.
+Multidimensional Gaussian filters are separable, which means that we
+can apply the 1D filter to all the dimensions of the signal to compute
+a $N$-D denoising.
+
+\begin{equation}
+  \hat{\mathbf{Y}}(\sigma) = \Big(\big({\mathbf Y}*^{(\text{Z})}{\mathbf h}(\sigma)\big)*^{(\text{Y})}{\mathbf h}(\sigma)\Big)*^{(\text{X})}{\mathbf h}(\sigma),
+    \label{eq:3DGD}
+\end{equation}
+where ${\mathbf s}*^{(d)}{\mathbf h}$ is the 1D convolution applied to the dimension $d$ of the signal ${\mathbf s}$ and the 1D filter ${\mathbf h}$.
 
 GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$
-results in a lower the cut-off frequency of the filter. $\sigma$ is
-not (objectively) optimizable.
+results in a lower the cut-off frequency of the filter. Notice that
+$\sigma$ is not (objectively) optimizable using only pure-distortion
+metrics.
 
 % \section{AND}
 
@@ -148,6 +155,11 @@ The estimator requires the following parameters to be defined:
 \item $l$, that controls the maximun displacements for the
   estimator. Higher $l$ values increase blurring.
 \end{enumerate}
+
+\begin{equation}
+  \hat{\mathbf{Y}}(\sigma) = \mathbf{Y}*\mathbf{h}(\sigma),
+  \label{eq:GF}
+\end{equation}
 
 \section{2D-RSVD (2D Random Shuffing Volume Denoising}
 
