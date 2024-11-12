@@ -86,9 +86,10 @@ computing the FSC and averaging the correlations
 \cite{verbeke2024self}. Another approach can split the data into two
 random half volumes \cite{verbeke2024self}.
 
-\section{Noise modeling}
+\section{Additive noise model}
 
-Being $\mathbf{X}$ the original (without noise, ground truth usually unknown) volume,
+Being $\mathbf{X}$ the original (without noise, ground truth usually
+unknown) volume,
 \begin{equation}
   \mathbf{Y} = \mathbf{X} + \mathbf{N}
   \label{eq:noisy_model}
@@ -108,58 +109,96 @@ in the low frequencies, a Gaussian filter is defined by
   \mathbf{h}(\sigma) = \{\mathbf{h}_i(\sigma)\} = \frac{1}{\sqrt{2\pi}\sigma}e^{{-i}^2/(2\sigma^2)},
 \end{equation}
 where $\sigma$ is the standard deviation of a normal
-distribution. 1D filtering is represented by
+distribution. 1-D Gaussian filtering is represented by
 \begin{equation}
   \hat{\mathbf{Y}}(\sigma) = \mathbf{Y}*\mathbf{h}(\sigma),
   \label{eq:GF}
 \end{equation}
-where $\cdot*\cdot$ represent the convolution of digital signals.
+where $\cdot*\cdot$ represent the convolution of digital 1-D signals.
 
 Multidimensional Gaussian filters are separable, which means that we
 can apply the 1D filter to all the dimensions of the signal to compute
-a $N$-D denoising.
-
+a $N$-D denoising:
 \begin{equation}
   \hat{\mathbf{Y}}(\sigma) = \Big(\big({\mathbf Y}*^{(\text{Z})}{\mathbf h}(\sigma)\big)*^{(\text{Y})}{\mathbf h}(\sigma)\Big)*^{(\text{X})}{\mathbf h}(\sigma),
-    \label{eq:3DGD}
+    \label{eq:3DGF}
 \end{equation}
-where ${\mathbf s}*^{(d)}{\mathbf h}$ is the 1D convolution applied to the dimension $d$ of the signal ${\mathbf s}$ and the 1D filter ${\mathbf h}$.
+where ${\mathbf s}*^{(d)}{\mathbf h}$ is the 1D convolution applied to
+the dimension $d$ of the signal ${\mathbf s}$ and the 1D filter
+${\mathbf h}$:
+\begin{equation*}
+    \begin{array}{l}
+    \mathbf{Y}*^{(\text{Z})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[:,y,x]}*{\mathbf h}(\sigma)~\text{for}~y,x=0,1,\cdots,N-1\},\\
+    \mathbf{Y}*^{(\text{Y})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[z,:,x]}*{\mathbf h}(\sigma)~\text{for}~z,x=0,1,\cdots,N-1\}, \text{and}\\
+    \mathbf{Y}*^{(\text{X})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[z,y,:]}*{\mathbf h}(\sigma)~\text{for}~z,y=0,1,\cdots,N-1\}.
+    \end{array}
+\end{equation*}
+
+For simplicity, Eq.~\ref{eq:3DGF} defines isotropic
+filtering, but variance can be different at each dimension to
+provide anisotropy.
 
 GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$
 results in a lower the cut-off frequency of the filter. Notice that
-$\sigma$ is not (objectively) optimizable using only pure-distortion
+$\sigma$ is not (objectively) optimizable using only distortion 
 metrics.
+
+\section{SDPG (Structure-Preserving Gaussian Denoising) \cite{gonzalez2023structure}}
+
+SDPG is based in 3D Gaussian filtering (Eq.~\ref{eq:3DGF}), but the noised
+volume ${\mathbf Y}$ is dynamically warped to decrease the bluring at the
+structures detected by an 2-D OF (Optical Flow) estimator:
+\begin{equation}
+  \hat{\mathbf{Y}}(\sigma; w, l) = \Big(\big(R_\text{Z}(\mathbf{Y}; w, l)*^{(\text{Z})}{\mathbf h}(\sigma)\big)*^{(\text{Y})}{\mathbf h}(\sigma)\Big)*^{(\text{X})}{\mathbf h}(\sigma),
+    \label{eq:SDPG}
+\end{equation}
+where
+\begin{equation*}
+    \begin{array}{rclll}
+    R_\text{Z}(\mathbf{Y}; w, l) & = & \big\{ \{ \overset{z'\rightarrow z}{\mathbf d}({\mathbf Y}_{[z',:,:]}; w, l)~:~\overset{z'\rightarrow z}{\mathbf d}({\mathbf Y}_{[z',:,:]})\approx{\mathbf Y}_{[z,:,:]} & \\ & & \text{for}
+ ~z'=z-k,\cdots,z+k\} ~\text{for}~z=0,1,\cdots,N_\text{Z}-1\big\}, \\
+    R_\text{Y}(\mathbf{Y}; w, l) & = & \big\{ \{ \overset{y'\rightarrow y}{\mathbf d}({\mathbf Y}_{[:,y',:]}; w, l)~:~\overset{y'\rightarrow y}{\mathbf d}({\mathbf Y}_{[:,y',:]}; w, l)\approx{\mathbf Y}_{[:,y,:]} & \\ & & \text{for}
+ ~y'=y-k,\cdots,y+k\} ~\text{for}~y=0,1,\cdots,N_\text{Y}-1\big\},~\text{and} \\
+    R_\text{X}(\mathbf{Y}; w, l) & = & \big\{ \{ \overset{x'\rightarrow x}{\mathbf d}({\mathbf Y}_{[:,:,x']}; w, l)~:~\overset{x'\rightarrow x}{\mathbf d}({\mathbf Y}_{[:,:,x']}; w, l)\approx{\mathbf Y}_{[:,:,x]} & \\ & & \text{for}
+ ~x'=x-k,\cdots,x+k\} ~\text{for}~x=0,1,\cdots,N_\text{X}-1\big\}
+    \end{array}
+\end{equation*}
+are the warped volumes. For example,
+$\overset{x'\rightarrow x}{\mathbf d}({\mathbf Y}_{[:,:,x']}; w, l)$
+represents the projection of the slice at coordinate $x'$ fulfilling
+that
+$\overset{x'\rightarrow x}{\mathbf d}({\mathbf Y}_{[:,:,x']}; w,
+l)\approx{\mathbf Y}_{[:,:,x]}$. Notice that, for each possible offset
+in ${\mathbf Z}$, ${\mathbf Y}$, and ${\mathbf X}$, a different set of
+warped 2-D slices must be computed.
+
+As indicated in Eq.~\ref{eq:SDPG}, the estimator requires 2 new
+parameters:
+\begin{enumerate}
+\item $w$, the size of a 2D window used to analyze the 2D slices. If
+  $w$ is large, the estimator is less sensitive to the noise but also
+  the small structures are ignored. Therefore, higher $w$ values
+  increases blurring.
+\item $l$, that controls the maximun displacements that the
+  estimator can generate. Blurring increases with $l$.
+\end{enumerate}
+
 
 % \section{AND}
 
 % \section{N2V}
 
 \section{Cryo-CARE \cite{buchholz2019cryo}}
+Cryo-CARE (Content-Aware image REstoration) is an implementation of
+Noise2Noise \cite{lehtinen2018noise2noise}.
+
+CARE (Content-Aware image REstoration) training methods can be supervised
+(where a dataset with a large enough number of pairs
+$({\mathbf Y}, {\mathbf X})$ is know for train a U-Net, and
+unsupervised (without ground-truth, using). This last case, which is the interesting
+for us, uses a Noise2Void
 
 \section{BM4D}
-
-\section{SDPG (Structure-Preserving Gaussian Denoising) \cite{gonzalez2023structure}}
-
-In SDPG the Eq.~\ref{eq:GF} holds, but using an 2D OF (Optical Flow) estimator
-the signal samples are extracted from warped images generated
-after projecting the original images with the vectors fields produced
-the estimator. This decreases the bluring in those areas where the
-estimator is able to detect structures.
-
-The estimator requires the following parameters to be defined:
-\begin{enumerate}
-\item $\sigma$, with an impact similar to the case of GD.
-\item $w$, the size of a 2D window used to analyze the 2D slices. If
-  $w$ is large, the estimator is less sensitive to the noise but also
-  the small structures are ignored.
-\item $l$, that controls the maximun displacements for the
-  estimator. Higher $l$ values increase blurring.
-\end{enumerate}
-
-\begin{equation}
-  \hat{\mathbf{Y}}(\sigma) = \mathbf{Y}*\mathbf{h}(\sigma),
-  \label{eq:GF}
-\end{equation}
 
 \section{2D-RSVD (2D Random Shuffing Volume Denoising}
 
