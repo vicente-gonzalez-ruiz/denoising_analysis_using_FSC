@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{amsfonts}
 
 \title{Denoising of Electron Microscopy 3D Data}
 
@@ -88,23 +89,34 @@ random half volumes \cite{verbeke2024self}.
 
 \section{Additive noise model}
 
-Being $\mathbf{X}$ the original (without noise, ground truth usually
-unknown) volume,
+Being $\mathbf{X}$ an original (without noise, ground truth usually
+unknown) volume, and ${\mathbf N}_i$ is an unknown zero-mean
+($\mathbb{E}[{\mathbf N}_i]=0$) noise instance (with the same shape than
+${\mathbf X}$), the denoising algorithms described here suppose that
 \begin{equation}
-  \mathbf{Y} = \mathbf{X} + \mathbf{N}
+  \hat{\mathbf X}^{(i)} = {\mathbf X} + {\mathbf N}_i,
   \label{eq:noisy_model}
 \end{equation}
-is the noisy (known) volume, where $\mathbf{N}$ is the added (unknown)
-noise. We assume that $\mathbf{X}$ and $\mathbf{N}$ are statistically
-independent (nothing can said about $\mathbf{N}$ known $\mathbf{X}$,
-and viceversa). Therefore, it is impossible to obtain $\mathbf{X}$
-from $\mathbf{Y}$.
+is the noisy (known) volume. We assume that ${\mathbf X}^{(i)}$ and
+$\mathbf{N}_i$ are i.i.d. (statistically independent and identically
+distributed, and therefore, nothing can be said about ${\mathbf N}_i$
+known ${\mathbf X}$, and viceversa), $\forall i$. Therefore, it is
+impossible to obtain ${\mathbf X}$ from any $\hat{\mathbf X}^{(i)}$.
 
-\section{Types of noise}
-White Gaussian noise: independent and identically distributed and can
-be found as $N\~\mathcal{N}(\mu,\sigma^2)$ where $\sigma$ represents
-the noise level.
+Examples of this type of noise are:
+\begin{enumerate}
+\item Zero-mean Gaussian noise, where
+  $\mathbf{N}_i\sim\mathcal{N}(\mu=0,\sigma^2)$, representing $\sigma$
+  the noise level.
+\item Zero-mean uniform noise, where
+  $\mathbf{N}_i\sim\mathcal{U}(a=-c, b=c)$.
+\end{enumerate}
 
+Notice that in all these methods, it's hold that
+\begin{equation}
+  {\mathbb E}\big(\{{\mathbf X}^{(i)}\}_{i=1}^N\big)={\mathbf X}.
+\end{equation}
+  
 \section{GD (Gaussian Denoising)}
 
 Also known by Gaussian smoothing filtering.
@@ -196,14 +208,34 @@ parameters:
 % \section{N2V}
 
 \section{Cryo-CARE \cite{buchholz2019cryo}}
-Cryo-CARE (Content-Aware image REstoration) is an implementation of
-Noise2Noise \cite{lehtinen2018noise2noise}.
+CARE (Content-Aware image REstoration) training methods leverage
+available knowledge about the data at hand ought to yield superior
+restoration results \cite{weigert2018content}. Concretely, Cryo-CARE
+is an implementation of Noise2Noise (N2N) \cite{lehtinen2018noise2noise}.
 
-CARE (Content-Aware image REstoration) training methods can be supervised
-(where a dataset with a large enough number of pairs
-$({\mathbf Y}, {\mathbf X})$ is know for train a U-Net, and
-unsupervised (without ground-truth, using). This last case, which is the interesting
-for us, uses a Noise2Void
+N2N is a ``supervised'' learning method for denoising where the model
+(a U-Net) is trained on pairs of noisy images. However, unlike
+clasical supervised denoising deep-learning based models, that
+implement
+\begin{equation}
+  \underset{\theta}{\operatorname{arg\,min}} \, \sum_j L \big(f_\theta(\hat{\mathbf X}_j^{(1)}), {\mathbf X}_j\big)
+\end{equation}
+where $\{(\hat{\mathbf X}_j^{(1)}, {\mathbf X}_j)\}_{j=1}^M$ is the training
+dataset, and $L$ is a given lost function such as the MSE (here higher
+values mean worst results), N2N solves
+\begin{equation}
+  \underset{\theta}{\operatorname{arg\,min}} \, \sum_j L \big(f_\theta(\hat{\mathbf X}_j^{(1)}), {\mathbf X}_j^{(2)}\big).
+\end{equation}
+In other words, given two noisy versions
+$\{\hat{\mathbf Y}^{(1)}, \hat{\mathbf Y}^{(2)}\}$ of the same (clean)
+volume ${\mathbf Y}$, N2N learns to infeer a denoised volume
+\begin{equation}
+  \tilde{\mathbf Y}=\frac{1}{2}\big(f_\theta(\hat{\mathbf Y}^{(1)})+f_\theta(\hat{\mathbf Y}^{(2)})\big)\approx{\mathbf Y}.
+\end{equation}
+Obviously, better approximations to ${\mathbf Y}$ will be obtained
+having more noisy instances, after averaing all the denoised volumes.
+
+\section{NLM (Non Local Means)} 
 
 \section{BM4D}
 
@@ -215,6 +247,6 @@ for us, uses a Noise2Void
 \section{}
 
 \bibliographystyle{plain}
-\bibliography{signal_processing,microscopy}
+\bibliography{signal_processing,microscopy,denoising}
 
 \end{document}
