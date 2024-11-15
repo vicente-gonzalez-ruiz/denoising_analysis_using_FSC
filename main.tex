@@ -87,7 +87,14 @@ computing the FSC and averaging the correlations
 \cite{verbeke2024self}. Another approach can split the data into two
 random half volumes \cite{verbeke2024self}.
 
-\section{Additive noise model}
+\section{Noise models}
+
+In all the noise models described in this section, it's hold that
+\begin{equation}
+  {\mathbb E}\big(\{{\mathbf X}^{(i)}\}_{i=1}^N\big)={\mathbf X}.
+\end{equation}
+
+\subsection{Additive noise models}
 
 Being $\mathbf{X}$ an original (without noise, ground truth usually
 unknown) volume, and ${\mathbf N}_i$ is an unknown zero-mean
@@ -105,18 +112,31 @@ impossible to obtain ${\mathbf X}$ from any $\hat{\mathbf X}^{(i)}$.
 
 Examples of this type of noise are:
 \begin{enumerate}
-\item Zero-mean Gaussian noise, where
-  $\mathbf{N}_i\sim\mathcal{N}(\mu=0,\sigma^2)$, representing $\sigma$
-  the noise level.
-\item Zero-mean uniform noise, where
-  $\mathbf{N}_i\sim\mathcal{U}(a=-c, b=c)$.
+\item Zero-mean uniform noise ($\mathbf{N}_i\sim\mathcal{U}(c)$) with
+  PDF (Probability Density Function):
+  \begin{equation}
+    f(x; c) = \begin{cases}
+      \frac{1}{2c} & \text{for } -c \le x \le c, \\[8pt]
+      0 & \text{for } x < c \ \text{ or } \ x > -c.
+    \end{cases}
+  \end{equation}
+\item Zero-mean Gaussian noise
+  ($\mathbf{N}_i\sim\mathcal{N}(\mu=0,\sigma^2)$, representing
+  $\sigma$ the noise level) with PDF:
+  \begin{equation}
+    f(x; \sigma) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} }.
+  \end{equation}
 \end{enumerate}
 
-Notice that in all these methods, it's hold that
-\begin{equation}
-  {\mathbb E}\big(\{{\mathbf X}^{(i)}\}_{i=1}^N\big)={\mathbf X}.
-\end{equation}
-  
+\subsection{Multiplicative noise models}
+\begin{enumerate}
+\item Poisson noise ($\mathbf{N}_i\sim\mathcal{P}(\lambda)$) with PMD (Probability Mass Distribution, also
+  called discrete PDF):
+  \begin{equation}
+    f(k; \lambda) = \Pr(X{=}k) = \frac{\lambda^k e^{-\lambda}}{k!}.
+  \end{equation}
+  Notice that if lambda $\lambda$
+\end{enumerate}
 \section{GD (Gaussian Denoising)}
 
 Also known by Gaussian smoothing filtering.
