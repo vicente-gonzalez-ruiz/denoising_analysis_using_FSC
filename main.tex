@@ -88,32 +88,49 @@ computing the FSC and averaging the correlations
 random half volumes \cite{verbeke2024self}.
 
 \section{Noise models}
-
-In all the noise models described in this section, it's hold that
-\begin{equation}
-  {\mathbb E}\big(\{{\mathbf X}^{(i)}\}_{i=1}^N\big)={\mathbf X}.
-\end{equation}
+\label{sec:noise_models}
 
 \subsection{Additive noise models}
 
-Being $\mathbf{X}$ an original (without noise, ground truth usually
-unknown) volume, and ${\mathbf N}_i$ is an unknown zero-mean
-($\mathbb{E}[{\mathbf N}_i]=0$) noise instance (with the same shape than
-${\mathbf X}$), the denoising algorithms described here suppose that
+Let $\mathbf{X}$ be a \emph{clean} (without noise, ground truth
+usually unknown) tensor, and ${\mathbf N}^{(i)}$ the $i$-th (unknown)
+noise tensor instance of the set $\{{\mathbf N}^{(i)}\}_{i=1}^I$. The
+additive noise model defines a noisy tensor
 \begin{equation}
-  \hat{\mathbf X}^{(i)} = {\mathbf X} + {\mathbf N}_i,
-  \label{eq:noisy_model}
+  \hat{\mathbf X}^{(i)} = {\mathbf X} + {\mathbf N}^{(i)},
+  \label{eq:additive_noisy_model}
 \end{equation}
-is the noisy (known) volume. We assume that ${\mathbf X}^{(i)}$ and
-$\mathbf{N}_i$ are i.i.d. (statistically independent and identically
-distributed, and therefore, nothing can be said about ${\mathbf N}_i$
-known ${\mathbf X}$, and viceversa), $\forall i$. Therefore, it is
-impossible to obtain ${\mathbf X}$ from any $\hat{\mathbf X}^{(i)}$.
+where
+\begin{equation}
+  {\mathbb E}(I)[{\mathbf N}^{(i)}_j]=\frac{1}{I} \sum_{i=1}^I {\mathbf N}_j^{(i)}=0,
+  \label{eq:noise_expectation}
+\end{equation}
+where ${\mathbf N}^{(i)}_j$ if the $j$-th random noise value of ${\mathbf N}^{(i)}$, of a total of $J$ per noisy tensor instance. Notice that if the ${\mathbf N}^{(i)}_j$ are also i.i.d. (statistically independent and identically
+distributed), it is hold that
+\begin{equation}
+  \lim_{I \to \infty}{\mathbb E}(I)[{\mathbf N}]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
+  \label{eq:noise_expectation_2}
+\end{equation}
+(where ${\mathbf 0}$ is the zero tensor) and that
+\begin{equation}
+  \lim_{I \to \infty} \mathbb{E}(I)\left[\hat{\mathbf X}\right] = \lim_{I \to \infty} \frac{1}{I} \sum_{i=1}^I \hat{\mathbf X}^{(i)} = {\mathbf X}.
+  \label{eq:averaging_result}
+\end{equation}
 
-Examples of this type of noise are:
+We assume that ${\mathbf X}$ and $\mathbf{N}$ are (statistically)
+independent, and therefore, nothing can be said about
+${\mathbf N}^{(i)}$ from $\hat{\mathbf X}^{(i)}$ $\forall i$, and
+viceversa. For this reason, it is impossible to obtain ${\mathbf X}$
+from $\hat{\mathbf X}$, althouth we can approximate ${\mathbf X}$ by
+averaging $\hat{\mathbf X}^{(i)}$ instances.
+
+Examples of zero-mean i.i.d. noise distributions that
+satisfy\footnote{See
+  \url{https://github.com/vicente-gonzalez-ruiz/denoising_analysis_using_FSC/tree/main/figs/average_denoising.ipynb}}
+Eq.~\ref{eq:averaging_result} are:
 \begin{enumerate}
-\item Zero-mean uniform noise ($\mathbf{N}_i\sim\mathcal{U}(c)$) with
-  PDF (Probability Density Function):
+\item Zero-mean uniform noise (i.e., ${\mathbf N}\sim{\mathcal U}(c)$) with
+  PDF (Probability Density Function) defined as
   \begin{equation}
     f(x; c) = \begin{cases}
       \frac{1}{2c} & \text{for } -c \le x \le c, \\[8pt]
@@ -121,22 +138,51 @@ Examples of this type of noise are:
     \end{cases}
   \end{equation}
 \item Zero-mean Gaussian noise
-  ($\mathbf{N}_i\sim\mathcal{N}(\mu=0,\sigma^2)$, representing
-  $\sigma$ the noise level) with PDF:
+  (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, representing
+  $\sigma$ the variance of the noise) with PDF defined by
   \begin{equation}
     f(x; \sigma) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} }.
   \end{equation}
 \end{enumerate}
 
 \subsection{Multiplicative noise models}
+In multiplicative models, the noisy tensor is modeled by
+\begin{equation}
+  \hat{\mathbf X}^{(i)} = {\mathbf X} (1 + {\mathbf N}^{(i)}).
+  \label{eq:multiplicative_noisy_model}
+\end{equation}
+
+As can be seen, the effective noise added to ${\mathbf X}$ is
+${\mathbf X}{\mathbf N}^{(i)}$, and for this reason, it can be said
+that multiplicative models are signal dependent because ${\mathbf X}$
+\emph{modulates} the amount of noise that each signal sample, even if
+the random $\{{\mathbf N}^{(i)}_j\}$ values follow a
+i.i.d. distribution. Luckily, this fact does not pose a major
+inconvenience to continue satisfying Eq.~\ref{eq:noise_expectation},
+(and therefore, also Eq.~\ref{eq:averaging_result}) if the intensity
+variation due to noise that each sample suffers between different
+tensor instances (the standard deviation) has zero mean (see
+Eq.~\ref{eq:noise_expectation}).
+
+Examples of multiplicative noise distributions are:
+
 \begin{enumerate}
-\item Poisson noise ($\mathbf{N}_i\sim\mathcal{P}(\lambda)$) with PMD (Probability Mass Distribution, also
-  called discrete PDF):
+\item Poisson noise ($\mathbf{N}_i\sim\mathcal{P}(\lambda)$), also called shot noise is defined by a PMD (Probability Mass Distribution)\footnote{Also
+  called discrete PDF.} equal to
   \begin{equation}
     f(k; \lambda) = \Pr(X{=}k) = \frac{\lambda^k e^{-\lambda}}{k!}.
   \end{equation}
-  Notice that if lambda $\lambda$
+\item Rician noise
 \end{enumerate}
+
+\subsection{Expectation of noisy instances}
+In all the noise models described in Section~\ref{sec:noise_models}
+the random tensors $\{{\mathbf N}_i\}_{i=1}^N$ are i.i.d., and therefore,
+it's hold that
+
+
+
+
 \section{GD (Gaussian Denoising)}
 
 Also known by Gaussian smoothing filtering.
