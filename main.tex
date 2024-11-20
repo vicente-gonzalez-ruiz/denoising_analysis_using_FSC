@@ -136,17 +136,19 @@ Eq.~\ref{eq:averaging_result} are:
 \item Zero-mean uniform noise (i.e., ${\mathbf N}\sim{\mathcal U}(c)$) with
   PDF (Probability Density Function) defined as
   \begin{equation}
-    f(x; c) = \begin{cases}
+    f(x; c) = \Pr({\mathbf N}^{(i)}_j{=}x) = \begin{cases}
       \frac{1}{2c} & \text{for } -c \le x \le c, \\[8pt]
-      0 & \text{for } x < c \ \text{ or } \ x > -c.
+      0 & \text{for } x < c \ \text{ or } \ x > -c,
     \end{cases}
   \end{equation}
+  $x$ continuous.
 \item Zero-mean Gaussian noise
   (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, representing
   $\sigma$ the variance of the noise) with PDF defined by
   \begin{equation}
-    f(x; \sigma) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} }.
+    f(x; \sigma) = \Pr({\mathbf N}^{(i)}_j{=}x) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} },
   \end{equation}
+  $x$ continuous.
 \end{enumerate}
 
 \subsection{Multiplicative noise models}
@@ -158,25 +160,31 @@ In multiplicative models, the noisy tensor is modeled by
 
 As can be seen, the effective noise added to ${\mathbf X}$ is
 ${\mathbf X}{\mathbf N}^{(i)}$, and for this reason, it can be said
-that multiplicative models are signal dependent because ${\mathbf X}$
+that multiplicative models are signal dependent (${\mathbf X}$
 \emph{modulates} the amount of noise that affect to the each signal
-samples of ${\mathbf X}$, even if the random variable
-$\{{\mathbf N}^{(i)}_j\}$ follow a i.i.d. distribution. Luckily, this
-fact does not pose a major inconvenience to continue satisfying
+sample of ${\mathbf X}$, even if the random variable
+${\mathbf N}^{(i)}$ is i.i.d.). Luckily, this fact does not pose a
+major inconvenience to continue satisfying
 Eq.~\ref{eq:noise_expectation}, (and therefore, also
-Eq.~\ref{eq:averaging_result}) if the intensity variation due to noise
-that each sample suffers between different tensor instances (the
+Eq.~\ref{eq:averaging_result}) if the variation in intensity due to
+noise that each sample suffers between different tensor instances (the
 standard deviation) has zero mean.
 
 Examples of multiplicative noise distributions are:
 
 \begin{enumerate}
-\item Poisson noise ($\mathbf{N}_i\sim\mathcal{P}(\lambda)$), also called shot noise is defined by a PMD (Probability Mass Distribution)\footnote{Also
-  called discrete PDF.} equal to
+\item Poisson noise ($\mathbf{N}\sim\mathcal{P}(\lambda)$), also
+  called \emph{shot noise}, is defined by a PMD (Probability Mass
+  Distribution)\footnote{Also called discrete PDF.} equal to
   \begin{equation}
-    f(k; \lambda) = \Pr(X{=}k) = \frac{\lambda^k e^{-\lambda}}{k!}.
+    f(k; \lambda) = \Pr({\mathbf N}^{(i)}_j{=}k) = \frac{\lambda^k e^{-\lambda}}{k!},
   \end{equation}
-\item Rician noise ($\mathbf{N}_i\sim\mathcal{R}(\sigma)$), with PDF
+  $k$ discrete.
+\item Rician noise ($\mathbf{N}\sim\mathcal{R}(\sigma)$), with PDF
+  \begin{equation}
+    f(x\mid\nu,\sigma) = \frac{x}{\sigma^2}e^{(\frac{-(x^2+\nu^2)}{2\sigma^2}\right)}I_0\left(\frac{x\nu}{\sigma^2}\right),
+\end{equation}
+where $x$ is continuous, 
 \end{enumerate}
 
 \subsection{Expectation of noisy instances}
