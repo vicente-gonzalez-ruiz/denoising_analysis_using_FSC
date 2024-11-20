@@ -105,8 +105,11 @@ where
   {\mathbb E}(I)[{\mathbf N}^{(i)}_j]=\frac{1}{I} \sum_{i=1}^I {\mathbf N}_j^{(i)}=0,
   \label{eq:noise_expectation}
 \end{equation}
-where ${\mathbf N}^{(i)}_j$ if the $j$-th random noise value of ${\mathbf N}^{(i)}$, of a total of $J$ per noisy tensor instance. Notice that if the ${\mathbf N}^{(i)}_j$ are also i.i.d. (statistically independent and identically
-distributed), it is hold that
+where ${\mathbf N}^{(i)}_j$ is the $j$-th random noise (scalar) value
+of ${\mathbf N}^{(i)}$, of a total of $J$ per noisy tensor
+instance. Notice that if the ${\mathbf N}^{(i)}_j$ are
+statistically i.i.d. (independent and identically distributed), it is
+hold that
 \begin{equation}
   \lim_{I \to \infty}{\mathbb E}(I)[{\mathbf N}]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
   \label{eq:noise_expectation_2}
@@ -117,12 +120,13 @@ distributed), it is hold that
   \label{eq:averaging_result}
 \end{equation}
 
-We assume that ${\mathbf X}$ and $\mathbf{N}$ are (statistically)
+We assume that ${\mathbf X}$ and $\mathbf{N}$ are statistically
 independent, and therefore, nothing can be said about
 ${\mathbf N}^{(i)}$ from $\hat{\mathbf X}^{(i)}$ $\forall i$, and
 viceversa. For this reason, it is impossible to obtain ${\mathbf X}$
 from $\hat{\mathbf X}$, althouth we can approximate ${\mathbf X}$ by
-averaging $\hat{\mathbf X}^{(i)}$ instances.
+averaging $\hat{\mathbf X}^{(i)}$ instances (see
+Eq.~\ref{eq:averaging_result}).
 
 Examples of zero-mean i.i.d. noise distributions that
 satisfy\footnote{See
@@ -155,14 +159,14 @@ In multiplicative models, the noisy tensor is modeled by
 As can be seen, the effective noise added to ${\mathbf X}$ is
 ${\mathbf X}{\mathbf N}^{(i)}$, and for this reason, it can be said
 that multiplicative models are signal dependent because ${\mathbf X}$
-\emph{modulates} the amount of noise that each signal sample, even if
-the random $\{{\mathbf N}^{(i)}_j\}$ values follow a
-i.i.d. distribution. Luckily, this fact does not pose a major
-inconvenience to continue satisfying Eq.~\ref{eq:noise_expectation},
-(and therefore, also Eq.~\ref{eq:averaging_result}) if the intensity
-variation due to noise that each sample suffers between different
-tensor instances (the standard deviation) has zero mean (see
-Eq.~\ref{eq:noise_expectation}).
+\emph{modulates} the amount of noise that affect to the each signal
+samples of ${\mathbf X}$, even if the random variable
+$\{{\mathbf N}^{(i)}_j\}$ follow a i.i.d. distribution. Luckily, this
+fact does not pose a major inconvenience to continue satisfying
+Eq.~\ref{eq:noise_expectation}, (and therefore, also
+Eq.~\ref{eq:averaging_result}) if the intensity variation due to noise
+that each sample suffers between different tensor instances (the
+standard deviation) has zero mean.
 
 Examples of multiplicative noise distributions are:
 
@@ -172,7 +176,7 @@ Examples of multiplicative noise distributions are:
   \begin{equation}
     f(k; \lambda) = \Pr(X{=}k) = \frac{\lambda^k e^{-\lambda}}{k!}.
   \end{equation}
-\item Rician noise
+\item Rician noise ($\mathbf{N}_i\sim\mathcal{R}(\sigma)$), with PDF
 \end{enumerate}
 
 \subsection{Expectation of noisy instances}
