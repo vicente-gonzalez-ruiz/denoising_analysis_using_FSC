@@ -141,14 +141,14 @@ Eq.~\ref{eq:averaging_result} are:
       0 & \text{for } x < c \ \text{ or } \ x > -c,
     \end{cases}
   \end{equation}
-  $x$ continuous.
+  $x$ and $f$ continuous.
 \item Zero-mean Gaussian noise
   (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, representing
   $\sigma$ the variance of the noise) with PDF defined by
   \begin{equation}
     f(x; \sigma) = \Pr({\mathbf N}^{(i)}_j{=}x) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} },
   \end{equation}
-  $x$ continuous.
+  $x$ and $f$ continuous.
 \end{enumerate}
 
 \subsection{Multiplicative noise models}
@@ -179,12 +179,13 @@ Examples of multiplicative noise distributions are:
   \begin{equation}
     f(k; \lambda) = \Pr({\mathbf N}^{(i)}_j{=}k) = \frac{\lambda^k e^{-\lambda}}{k!},
   \end{equation}
-  $k$ discrete.
+  both $f$ and $k$ discretes ($f$ describes the probability of $k$
+  events occurring within the observed interval $\lambda$).  ..
 \item Rician noise ($\mathbf{N}\sim\mathcal{R}(\sigma)$), with PDF
   \begin{equation}
-    f(x\mid\nu,\sigma) = \frac{x}{\sigma^2}e^{(\frac{-(x^2+\nu^2)}{2\sigma^2}\right)}I_0\left(\frac{x\nu}{\sigma^2}\right),
-\end{equation}
-where $x$ is continuous, 
+    f(x\mid\nu,\sigma) = \frac{x}{\sigma^2}e^{\frac{-(x^2+\nu^2)}{2\sigma^2}}I_0\left(\frac{x\nu}{\sigma^2}\right),
+  \end{equation}
+  where $x$ is continuous, 
 \end{enumerate}
 
 \subsection{Expectation of noisy instances}
