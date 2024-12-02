@@ -90,7 +90,7 @@ random half volumes \cite{verbeke2024self}.
 \section{Noise models}
 \label{sec:noise_models}
 
-\subsection{Additive noise models}
+\subsection{Additive}
 
 Let $\mathbf{X}$ be a \emph{clean} (without noise, ground truth
 usually unknown) tensor, and ${\mathbf N}^{(i)}$ the $i$-th (unknown)
@@ -151,7 +151,7 @@ Eq.~\ref{eq:averaging_result} are:
   $x$ and $f$ continuous.
 \end{enumerate}
 
-\subsection{Multiplicative noise models}
+\subsection{Multiplicative (lineal)}
 In multiplicative models, the noisy tensor is modeled by
 \begin{equation}
   \hat{\mathbf X}^{(i)} = {\mathbf X} (1 + {\mathbf N}^{(i)}).
@@ -170,7 +170,7 @@ Eq.~\ref{eq:averaging_result}) if the variation in intensity due to
 noise that each sample suffers between different tensor instances (the
 standard deviation) has zero mean.
 
-Examples of multiplicative noise distributions are:
+Examples of multiplicative noise distributions:
 
 \begin{enumerate}
 \item Poisson noise ($\mathbf{N}\sim\mathcal{P}(\lambda)$), also
@@ -181,12 +181,30 @@ Examples of multiplicative noise distributions are:
   \end{equation}
   both $f$ and $k$ discretes ($f$ describes the probability of $k$
   events occurring within the observed interval $\lambda$).  ..
+\end{enumerate}
+
+Notice that multiplicative noise models are signal-dependent (depends
+on the amplitdude of the clean signal).
+
+\subsection{Non-lineal}
+
+There exist noise models in which the amplitude of the noise depends
+on the amplitude of the signal (are signal-dependent), but the
+relationship between the signal and the noise is not lineal.
+
+Examples of non-lineal noise distributions:
+
+\begin{enumerate}
 \item Rician noise ($\mathbf{N}\sim\mathcal{R}(\sigma)$), with PDF
   \begin{equation}
     f(x\mid\nu,\sigma) = \frac{x}{\sigma^2}e^{\frac{-(x^2+\nu^2)}{2\sigma^2}}I_0\left(\frac{x\nu}{\sigma^2}\right),
   \end{equation}
-  where $x$ is continuous, 
+  where $x$ is continuous. Rician noise is modeled by
+\begin{equation}
+  \hat{\mathbf X}^{(i)} = \sqrt{ ({\mathbf X} + {\mathbf N}_{\text{real}}^{(i)})^2 + ({\mathbf N}_{\text{imag}}^{(i)})^2}, \hat{\mathbf X}^{(i)}\sim\text{Rice}(\nu,\sigma)
+\end{equation}
 \end{enumerate}
+
 
 \subsection{Expectation of noisy instances}
 In all the noise models described in Section~\ref{sec:noise_models}
