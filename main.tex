@@ -11,114 +11,53 @@
 \maketitle
 
 \begin{abstract}
-  We analyze the effect of some denoising algorithms (GD, SPGD, AND,
-  Cryo-CARE, BM4D and RSVD) applied to electron microscopy volumes,
-  using different objective metrics (MSE, PPC, SSIM and FSC). Such
-  volumes are noisy, and we don't have a denoised version of them to
-  compare with. For this reason, for the same 
+  We analyze the denoising performance of signal averaging for several
+  noise statistical distributions. Then, we perform an objective
+  comparison between some of the denoising algoritms in the field
+  of 3D Electron Microscopy, in two situations, when we have a
+  denoised version of the signal and we have not.
 \end{abstract}
 
-\section{Metrics}
-
-The following metrics have been used to compare the noisy (original)
-volume and the denoised volume.
-
-\subsection{\href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
-    Squared Error)}}
-
-Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
+\section{Signal denoising by averaging}
+Let $\mathbf{X}$ be a \emph{clean} (without noise, ground truth
+usually unknown) tensor, and $\hat{\mathbf X}^{(i)}$ the $i$-th
+noisy-version tensor random instance of $\mathbf{X}$. We assume that
+we can estimate $\mathbf{X}$ by signal averaging, performing
 \begin{equation}
-  \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
+  \lim_{I \to \infty} \mathbb{E}\left[\{\hat{\mathbf X}^{(i)}\}_{i=1}^I\right] = \lim_{I \to \infty} \frac{1}{I} \sum_{i=1}^I \hat{\mathbf X}^{(i)} = {\mathbf X}.
+  \label{eq:averaging_result}
 \end{equation}
-where $N$ is the number of samples in one of the volumes (that must
-have the same number of samples).
-
-\subsection{\href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
-    (Structural Similarity Index Measure)}}
-
-After splitting the volume into $M$ non overlapped sub-vols,
-\begin{equation}
-  \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
-\end{equation}
-where $\overline{x}i$ is the mean of the $i$-th sub-vol of
-$\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
-for $\mathbf{Y}$), $\sigma_{\mathbf{x}_i\mathbf{y}_i}$ is the
-covariance of both sub-vols, $c_1=(k_1L) ²$, $c_2=(k_2L) 2$ are two
-variables to stabilize the division with weak denominator, $L$ is the
-dynamic range of the voxel values, with constants with default vales
-$K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
-sub-vols is $7\times 7\times 7$.
-
-\subsection{\href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
-    (Pearson Correlation Coefficient)}}
-The PPC is given by
-\begin{equation}
-  \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
-\end{equation}
-
-\subsection{FSC (Fourier Shell Correlation) curve}
-The FSC curve is a measure of the similarity between two 3D volumes
-represented in the Fourier domain \cite{verbeke2024self}. Each point
-of the curve prepresents the correlation between two ``shells'' of
-Fourier coefficients of both volumes. An advantage of the FSC over
-other similarity metrics such as the MSE, the SSIM and the PPC is that
-FSC values depend on the frequency, and this can be interesting in
-some scenarios, such as microscopy, where the resolution of the
-microscope if finite and known.
-
-A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
-\begin{equation}
-\text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
-\end{equation}
-where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
-of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
-$\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
-$\cdot^*$ denotes the complex conjugate of $\cdot$.
-
-In some fields such ashsingle particle electron cryo-microscopy
-(cryo-EM), the FSC curve has become the universal resolution metric
-and is used to assess the quality of a 3-D reconstruction
-\cite{rosenthal2003optimal,scheres2012prevention}.
-
-It is possible to compute the Self FSC (SFSC) by subsampling the data
-\cite{koho2019fourier}, for example, splitting the volume in odd and
-even slices, in each dimension (resulting a total of 6 subvolumes),
-computing the FSC and averaging the correlations
-\cite{verbeke2024self}. Another approach can split the data into two
-random half volumes \cite{verbeke2024self}.
 
 \section{Noise models}
 \label{sec:noise_models}
 
-\subsection{Additive}
-
-Let $\mathbf{X}$ be a \emph{clean} (without noise, ground truth
-usually unknown) tensor, and ${\mathbf N}^{(i)}$ the $i$-th (unknown)
-noise tensor instance of the set $\{{\mathbf N}^{(i)}\}_{i=1}^I$. The
-additive noise model defines a noisy tensor
+\subsection{Zero-mean additive noise models}
+Let ${\mathbf N}^{(i)}$ the $i$-th (unknown) noise tensor instance
+with the same shape that $\mathbf{X}$. In general, an additive noise
+model defines that
 \begin{equation}
   \hat{\mathbf X}^{(i)} = {\mathbf X} + {\mathbf N}^{(i)},
   \label{eq:additive_noisy_model}
 \end{equation}
-where
+where, if the noise is statistically i.i.d. (independent and
+identically distributed), we have that
 \begin{equation}
-  {\mathbb E}(I)[{\mathbf N}^{(i)}_j]=\frac{1}{I} \sum_{i=1}^I {\mathbf N}_j^{(i)}=0,
+  {\mathbb E}[\{{\mathbf N}^{(i)}_j\}_{j=0}^J]=\frac{1}{J} \sum_{i=1}^J {\mathbf N}_j^{(i)}=0,
   \label{eq:noise_expectation}
 \end{equation}
 where ${\mathbf N}^{(i)}_j$ is the $j$-th random noise (scalar) value
-of ${\mathbf N}^{(i)}$, of a total of $J$ per noisy tensor
-instance. Notice that if the ${\mathbf N}^{(i)}_j$ are
-statistically i.i.d. (independent and identically distributed), it is
-hold that
+of ${\mathbf N}^{(i)}$, and
 \begin{equation}
-  \lim_{I \to \infty}{\mathbb E}(I)[{\mathbf N}]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
+  J=\prod_{k=1}^N X.\text{shape}[k],
+\end{equation}
+where $N$ is the number of dimensions of the signal (usually 3).
+
+Notice that if the noise if zero-mean, then
+\begin{equation}
+  \lim_{I \to \infty}{\mathbb E}[\{{\mathbf N^{(i)}}\}_{i=1}^I]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
   \label{eq:noise_expectation_2}
 \end{equation}
-(where ${\mathbf 0}$ is the zero tensor) and that
-\begin{equation}
-  \lim_{I \to \infty} \mathbb{E}(I)\left[\hat{\mathbf X}\right] = \lim_{I \to \infty} \frac{1}{I} \sum_{i=1}^I \hat{\mathbf X}^{(i)} = {\mathbf X}.
-  \label{eq:averaging_result}
-\end{equation}
+where ${\mathbf 0}$ is the zero tensor.
 
 We assume that ${\mathbf X}$ and $\mathbf{N}$ are statistically
 independent, and therefore, nothing can be said about
@@ -128,10 +67,10 @@ from $\hat{\mathbf X}$, althouth we can approximate ${\mathbf X}$ by
 averaging $\hat{\mathbf X}^{(i)}$ instances (see
 Eq.~\ref{eq:averaging_result}).
 
-Examples of zero-mean i.i.d. noise distributions that
-satisfy\footnote{See
+Examples\footnote{See
   \url{https://github.com/vicente-gonzalez-ruiz/denoising_analysis_using_FSC/tree/main/figs/average_denoising.ipynb}}
-Eq.~\ref{eq:averaging_result} are:
+of common zero-mean i.i.d. noise distributions that model the noise
+generated by signal digital-sampling devices are:
 \begin{enumerate}
 \item Zero-mean uniform noise (i.e., ${\mathbf N}\sim{\mathcal U}(c)$) with
   PDF (Probability Density Function) defined as
@@ -141,24 +80,26 @@ Eq.~\ref{eq:averaging_result} are:
       0 & \text{for } x < c \ \text{ or } \ x > -c,
     \end{cases}
   \end{equation}
-  $x$ and $f$ continuous.
+  $x$ and $f$ continuous. Quantization noise is usually modeled by
+  uniform noise.
 \item Zero-mean Gaussian noise
-  (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, representing
-  $\sigma$ the variance of the noise) with PDF defined by
+  (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, representing $\mu$
+  the mean and $\sigma$ the variance of the noise) with PDF defined by
   \begin{equation}
     f(x; \sigma) = \Pr({\mathbf N}^{(i)}_j{=}x) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} },
   \end{equation}
-  $x$ and $f$ continuous.
+  $x$ and $f$ continuous. Thermal noise is usually modeled by Gaussian
+  noise.
 \end{enumerate}
 
-\subsection{Multiplicative (lineal)}
-In multiplicative models, the noisy tensor is modeled by
+\subsection{Multiplicative (lineal) zero-mean noise models}
+In multiplicative models, the noisy tensor is defined by
 \begin{equation}
   \hat{\mathbf X}^{(i)} = {\mathbf X} (1 + {\mathbf N}^{(i)}).
   \label{eq:multiplicative_noisy_model}
 \end{equation}
 
-As can be seen, the effective noise added to ${\mathbf X}$ is
+As it can be seen, the effective noise added to ${\mathbf X}$ is
 ${\mathbf X}{\mathbf N}^{(i)}$, and for this reason, it can be said
 that multiplicative models are signal dependent (${\mathbf X}$
 \emph{modulates} the amount of noise that affect to the each signal
@@ -170,7 +111,7 @@ Eq.~\ref{eq:averaging_result}) if the variation in intensity due to
 noise that each sample suffers between different tensor instances (the
 standard deviation) has zero mean.
 
-Examples of multiplicative noise distributions:
+Examples of multiplicative zero-mean noise distributions are:
 
 \begin{enumerate}
 \item Poisson noise ($\mathbf{N}\sim\mathcal{P}(\lambda)$), also
@@ -179,8 +120,18 @@ Examples of multiplicative noise distributions:
   \begin{equation}
     f(k; \lambda) = \Pr({\mathbf N}^{(i)}_j{=}k) = \frac{\lambda^k e^{-\lambda}}{k!},
   \end{equation}
-  both $f$ and $k$ discretes ($f$ describes the probability of $k$
-  events occurring within the observed interval $\lambda$).  ..
+  both $f$, $k\in\mathbb{Z}$ discretes ($f$ describes the probability
+  of $k$ events occurring within the observed interval
+  $\lambda\in\mathbb{R}$). Poisson noise can be significative in
+  optical capturing devices when work with low doses of photons, such
+  as in Electron Microscopy.
+\item Rayleigh noise ($\mathbf{N}\sim\mathrm{Rayleigh}(\sigma)$)),
+  also called \emph{speckle noise}, is defined by the PDF
+  \begin{equation}
+    f(x; \sigma) = \frac{x}{\sigma^2} e^{-x^2/(2\sigma^2)}, \quad x \geq 0,
+  \end{equation}
+  continuous both, $x$ and $\sigma$ (the scale parameter). Rayleigh
+  distribution particular case of Rice distribution
 \end{enumerate}
 
 Notice that multiplicative noise models are signal-dependent (depends
@@ -210,6 +161,7 @@ Examples of non-lineal noise distributions:
 In all the noise models described in Section~\ref{sec:noise_models}
 the random tensors $\{{\mathbf N}_i\}_{i=1}^N$ are i.i.d., and therefore,
 it's hold that
+
 
 
 
@@ -343,8 +295,75 @@ having more noisy instances, after averaing all the denoised volumes.
 
 \section{3D-RSVD (3D Random Shuffling Volume Denoising}
 
+\section{Metrics}
 
-\section{}
+The following metrics have been used to compare the noisy (original)
+volume and the denoised volume.
+
+\subsection{\href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
+    Squared Error)}}
+
+Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
+\begin{equation}
+  \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
+\end{equation}
+where $N$ is the number of samples in one of the volumes (that must
+have the same number of samples).
+
+\subsection{\href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
+    (Structural Similarity Index Measure)}}
+
+After splitting the volume into $M$ non overlapped sub-vols,
+\begin{equation}
+  \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
+\end{equation}
+where $\overline{x}i$ is the mean of the $i$-th sub-vol of
+$\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
+for $\mathbf{Y}$), $\sigma_{\mathbf{x}_i\mathbf{y}_i}$ is the
+covariance of both sub-vols, $c_1=(k_1L) ²$, $c_2=(k_2L) 2$ are two
+variables to stabilize the division with weak denominator, $L$ is the
+dynamic range of the voxel values, with constants with default vales
+$K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
+sub-vols is $7\times 7\times 7$.
+
+\subsection{\href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
+    (Pearson Correlation Coefficient)}}
+The PPC is given by
+\begin{equation}
+  \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
+\end{equation}
+
+\subsection{FSC (Fourier Shell Correlation) curve}
+The FSC curve is a measure of the similarity between two 3D volumes
+represented in the Fourier domain \cite{verbeke2024self}. Each point
+of the curve prepresents the correlation between two ``shells'' of
+Fourier coefficients of both volumes. An advantage of the FSC over
+other similarity metrics such as the MSE, the SSIM and the PPC is that
+FSC values depend on the frequency, and this can be interesting in
+some scenarios, such as microscopy, where the resolution of the
+microscope if finite and known.
+
+A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
+\begin{equation}
+\text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
+\end{equation}
+where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
+of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
+$\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
+$\cdot^*$ denotes the complex conjugate of $\cdot$.
+
+In some fields such ashsingle particle electron cryo-microscopy
+(cryo-EM), the FSC curve has become the universal resolution metric
+and is used to assess the quality of a 3-D reconstruction
+\cite{rosenthal2003optimal,scheres2012prevention}.
+
+It is possible to compute the Self FSC (SFSC) by subsampling the data
+\cite{koho2019fourier}, for example, splitting the volume in odd and
+even slices, in each dimension (resulting a total of 6 subvolumes),
+computing the FSC and averaging the correlations
+\cite{verbeke2024self}. Another approach can split the data into two
+random half volumes \cite{verbeke2024self}.
+
 
 \bibliographystyle{plain}
 \bibliography{signal_processing,microscopy,denoising}
