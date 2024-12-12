@@ -3,9 +3,9 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 
-\title{Denoising of Electron Microscopy 3D Data}
+\title{Denoising in Electron Microscopy Imaging}
 
-\author{Vicente González Ruiz and José Jesús Fernández Rodríguez}
+\author{Vicente González-Ruiz and José Jesús Fernández Rodríguez}
 
 \begin{document}
 \maketitle
@@ -20,8 +20,9 @@
 
 \section{Signal denoising by averaging}
 Let $\mathbf{X}$ be a \emph{clean} (without noise, ground truth
-usually unknown) tensor, and $\hat{\mathbf X}^{(i)}$ the $i$-th
-noisy-version tensor random instance of $\mathbf{X}$ generated, in general, through
+usually unknown) tensor\footnote{Which usually represents an image or
+  a volume.}, and $\hat{\mathbf X}^{(i)}$ the $i$-th noisy-version
+tensor random instance of $\mathbf{X}$ generated, in general, through
 \begin{equation}
   \hat{\mathbf X}^{(i)} = f(\mathbf{X}, \mathbf{N}^{(i)}),
 \end{equation}
@@ -30,33 +31,34 @@ with the same shape as $\mathbf{X}$.
 
 We assume that ${\mathbf X}$ and $\mathbf{N}$ are statistically
 independent, and therefore, nothing can be said about
-${\mathbf N}^{(i)}$ from $\hat{\mathbf X}^{(i)}$, and
-viceversa. For this reason, it is impossible to obtain ${\mathbf X}$
+${\mathbf N}^{(i)}$ if we know $\hat{\mathbf X}^{(i)}$, and
+viceversa, and therefore, it is impossible to obtain ${\mathbf X}$
 from a single $\hat{\mathbf X}^{(i)}$, althouth we can approximate ${\mathbf X}$ by
 averaging $\hat{\mathbf X}^{(i)}$ instances, performing
 \begin{equation}
   \lim_{I \to \infty} \mathbb{E}\left[\{\hat{\mathbf X}^{(i)}\}_{i=1}^I\right] = \lim_{I \to \infty} \frac{1}{I} \sum_{i=1}^I \hat{\mathbf X}^{(i)} = {\mathbf X}.
   \label{eq:averaging_result}
 \end{equation}
-Notice that Eq.~\ref{eq:averaging_result} is true only if 
+Notice that Eq.~\ref{eq:averaging_result} is true if 
 \begin{equation}
   \overline{\mathbf N} = \lim_{I \to \infty}{\mathbb E}[\{{\mathbf N^{(i)}}\}_{i=1}^I]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
   \label{eq:noise_expectation_2}
 \end{equation}
-where ${\mathbf 0}$ is the zero tensor with the same shape as $\mathbf{X}$, and in the case that $\overline{\mathbf N}\ne {\mathbf 0}$, but known, we can still find ${\mathbf X}$ through
+where ${\mathbf 0}$ is the zero tensor with the same shape as $\mathbf{X}$, and when $\overline{\mathbf N}\ne {\mathbf 0}$, but known, we can still find ${\mathbf X}$ through
 \begin{equation}
-  {\mathbf X} = \lim_{I \to \infty} \mathbb{E}\left[\{\hat{\mathbf X}^{(i)}\}_{i=1}^I\right]  - \overline{\mathbf N}.
+  {\mathbf X} = \lim_{I \to \infty} \mathbb{E}\left[\{\hat{\mathbf X}^{(i)}\}_{i=1}^I\right]  - \overline{\mathbf N},
   \label{eq:averaging_result_with_bias}
 \end{equation}
+where, in general, $\overline{\mathbf N}$ can be a function of the amplitude of the noise. 
 
 \section{Noise models}
 \label{sec:noise_models}
 
 \subsection{Signal-independent noise (SIN) models}
 In SIN models, the noise is statistically i.i.d. (independent and
-identically distributed), i.e.
+identically distributed), i.e., the random values of ${\mathbf N}^{(i)}$ satisfy that
 \begin{equation}
-  {\mathbb E}[\{{\mathbf N}^{(i)}_j\}_{j=0}^J]=\frac{1}{J} \sum_{i=1}^J {\mathbf N}_j^{(i)}=\overline{\mathbf N}^{(i)},
+  {\mathbb E}[\{{\mathbf N}^{(i)}_j\}_{j=1}^J]=\frac{1}{J} \sum_{i=1}^J {\mathbf N}_j^{(i)}=\overline{\mathbf N}^{(i)},
   \label{eq:noise_expectation_1}
 \end{equation}
 where ${\mathbf N}^{(i)}_j$ is the $j$-th (scalar) value
@@ -140,6 +142,11 @@ Examples of SDN cases are:
   %\end{equation}
   %continuous both, $x$ and $\sigma$ (the scale parameter) is a
   %particular case of Rice distribution when $\nu=0$.
+  Notice that, even being $\nu=0$ (in whose case we are
+  working with the Rayleigh distribution
+  ($\mathbf{N}\sim\mathrm{Rayleigh}(\sigma)$)), the mean of the noise is not zero.
+
+  The noise that corrupts magnetic resonance images is usually modeled as Rician noise.
 
 \item Poisson noise ($\mathbf{N}\sim\mathrm{Poisson}(\lambda)$), also
   called \emph{shot noise}, where the noisy instance satisfies a PMD
