@@ -45,12 +45,20 @@ Notice that Eq.~\ref{eq:averaging_result} is true if
   \overline{\mathbf N} = \lim_{I \to \infty}{\mathbb E}[\{{\mathbf N^{(i)}}\}_{i=1}^I]=\lim_{I \to \infty}\frac{1}{I} \sum_{i=1}^I {\mathbf N}^{(i)}={\mathbf 0},
   \label{eq:noise_expectation_2}
 \end{equation}
-where ${\mathbf 0}$ is the zero tensor with the same shape as $\mathbf{X}$, and when $\overline{\mathbf N}\ne {\mathbf 0}$, but known, we can still find ${\mathbf X}$ through
+where ${\mathbf 0}$ is the zero tensor with the same shape as
+$\mathbf{X}$, and when $\overline{\mathbf N}\ne {\mathbf 0}$, but
+known, we can still find ${\mathbf X}$ through
 \begin{equation}
   {\mathbf X} = \lim_{I \to \infty} \mathbb{E}\left[\{\hat{\mathbf X}^{(i)}\}_{i=1}^I\right]  - \overline{\mathbf N},
   \label{eq:averaging_result_with_bias}
 \end{equation}
 where, in general, $\overline{\mathbf N}$ can be a function of the amplitude of the noise. 
+
+Finally, as can be seen in Eq.~\ref{eq:averaging_result}, we are
+supposing an impossible scenario in which we have an infinite number
+of noisy instances of the clean signal. Logically, in practice, $I$
+will be finite and we will be able only to obtain an approximation of
+${\mathbf X}$, that we denote by $\tilde{\mathbf X}$.
 
 \section{Noise models}
 \label{sec:noise_models}
@@ -163,49 +171,123 @@ Some SDN cases are:
   of electrons, such as often happens in Electron Microscopy.
 \end{enumerate}
 
-\section{Gaussian Denoising (GD)}
+\section{Metrics}
+
+The following metrics have been used to compare the noisy (original)
+volume and the denoised volume.
+
+\subsection{\href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
+    Squared Error)}}
+
+Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
+\begin{equation}
+  \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
+\end{equation}
+where $N$ is the number of samples in one of the volumes (that must
+have the same number of samples).
+
+\subsection{\href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
+    (Structural Similarity Index Measure)}}
+
+After splitting the volume into $M$ non overlapped sub-vols,
+\begin{equation}
+  \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
+\end{equation}
+where $\overline{x}i$ is the mean of the $i$-th sub-vol of
+$\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
+for $\mathbf{Y}$), $\sigma_{\mathbf{x}_i\mathbf{y}_i}$ is the
+covariance of both sub-vols, $c_1=(k_1L) ²$, $c_2=(k_2L) 2$ are two
+variables to stabilize the division with weak denominator, $L$ is the
+dynamic range of the voxel values, with constants with default vales
+$K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
+sub-vols is $7\times 7\times 7$.
+
+\subsection{\href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
+    (Pearson Correlation Coefficient)}}
+The PPC is given by
+\begin{equation}
+  \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
+\end{equation}
+
+\subsection{FSC (Fourier Shell Correlation) curve}
+
+Finally, notice that $\sigma$ (GD) is not (objectively) optimizable using
+only pure distortion metrics, such as MSE, PCC, and SSIM.
+
+The FSC curve is a measure of the similarity between two 3D volumes
+represented in the Fourier domain \cite{verbeke2024self}. Each point
+of the curve prepresents the correlation between two ``shells'' of
+Fourier coefficients of both volumes. An advantage of the FSC over
+other similarity metrics such as the MSE, the SSIM and the PPC is that
+FSC values depend on the frequency, and this can be interesting in
+some scenarios, such as microscopy, where the resolution of the
+microscope is finite and known.
+
+A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
+\begin{equation}
+\text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
+\end{equation}
+where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
+of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
+$\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
+$\cdot^*$ denotes the complex conjugate of $\cdot$.
+
+In some fields such ashsingle particle electron cryo-microscopy
+(cryo-EM), the FSC curve has become the universal resolution metric
+and is used to assess the quality of a 3-D reconstruction
+\cite{rosenthal2003optimal,scheres2012prevention}.
+
+It is possible to compute the Self FSC (SFSC) by subsampling the data
+\cite{koho2019fourier}, for example, splitting the volume in odd and
+even slices, in each dimension (resulting a total of 6 subvolumes),
+computing the FSC and averaging the correlations
+\cite{verbeke2024self}. Another approach can split the data into two
+random half volumes \cite{verbeke2024self}.
+
+\section{Denoising techniques}
+
+\subsection{Gaussian Denoising (GD)}
 
 GD, also known by Gaussian smoothing filtering, works weight-averaging
 signal samples. Under the assumption that most of the energy (and
 information) is concentrated in the low frequencies, a Gaussian filter
-is defined by
+(or kernel) is a low-pass filter defined by
 \begin{equation}
   \mathbf{h}(\sigma) = \{\mathbf{h}_i(\sigma)\} = \frac{1}{\sqrt{2\pi}\sigma}e^{{-i}^2/(2\sigma^2)},
+  \label{eq:GK}
 \end{equation}
-where $\sigma$ is the standard deviation of a normal
-distribution. 1-D Gaussian filtering is represented by
+where $\sigma$ determines the cut-off frequency of the filter (a higher $\sigma$
+results in a lower the cut-off frequency of the filter, and therefore,
+in a higher smoothing effect).
+
+1-D Gaussian filtering is represented by
 \begin{equation}
   \hat{\mathbf{Y}}(\sigma) = \mathbf{Y}*\mathbf{h}(\sigma),
   \label{eq:GF}
 \end{equation}
 where $*$ represent the convolution of digital (in this case, 1D) signals.
 
+As can be seen in Eq.~\ref{eq:GK} (all the kernel coefficients are
+positive), GD requires only a noisy instance, and computes weighted
+averages of neighbour signal samples. This does not mach the calculus
+described in Eq.~\ref{eq:averaging_result}, but as an advantage, GD
+requires only a noisy instance. The results is a smooth denoised
+signal $\tilde{\mathbf X}$, but as we will see, this is a common
+effect in all the denoising algorithms that work only with one noisy
+instance.
+
 Multidimensional Gaussian filters are separable, which means that we
 can apply the 1D filter to all the dimensions of the signal to compute
-a $N$D denoising as
+a $N$D denoising. For the 3D case,
 \begin{equation}
   \hat{\mathbf{Y}}(\sigma) = \Big(\big({\mathbf Y}*^{(\text{Z})}{\mathbf h}(\sigma)\big)*^{(\text{Y})}{\mathbf h}(\sigma)\Big)*^{(\text{X})}{\mathbf h}(\sigma),
     \label{eq:3DGF}
 \end{equation}
 where ${\mathbf s}*^{(d)}{\mathbf h}$ is the 1D convolution applied to
 the dimension $d$ of the signal ${\mathbf s}$ and the 1D filter
-${\mathbf h}$:
-\begin{equation*}
-    \begin{array}{l}
-    \mathbf{Y}*^{(\text{Z})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[:,y,x]}*{\mathbf h}(\sigma)~\text{for}~y,x=0,1,\cdots,N-1\},\\
-    \mathbf{Y}*^{(\text{Y})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[z,:,x]}*{\mathbf h}(\sigma)~\text{for}~z,x=0,1,\cdots,N-1\}, \text{and}\\
-    \mathbf{Y}*^{(\text{X})}{\mathbf h}(\sigma)=\{{\mathbf Y}_{[z,y,:]}*{\mathbf h}(\sigma)~\text{for}~z,y=0,1,\cdots,N-1\}.
-    \end{array}
-\end{equation*}
-
-For simplicity, Eq.~\ref{eq:3DGF} defines isotropic
-filtering, but variance can be different at each dimension to
-provide anisotropy.
-
-GD requires $\sigma$ to be provided as a parameter. A higher $\sigma$
-results in a lower the cut-off frequency of the filter. Notice that
-$\sigma$ is not (objectively) optimizable using only distortion 
-metrics.
+${\mathbf h}$. For simplicity, Eq.~\ref{eq:3DGF} defines isotropic
+filtering, but variance can be different at each dimension to provide
+anisotropic filtering.
 
 \section{SDPG (Structure-Preserving Gaussian Denoising) \cite{gonzalez2023structure}}
 
@@ -255,8 +337,10 @@ parameters:
 % from single noisy images,” in Proceedings of the IEEE/CVF conference
 % on computer vision and pattern recognition, 2019, pp. 2129–2137.
 
+
+
 \section{Cryo-CARE \cite{buchholz2019cryo}}
-CARE (Content-Aware image REstoration) training methods leverage
+CARE (Content-Aware image REstoration) methods leverage
 available knowledge about the data at hand ought to yield superior
 restoration results \cite{weigert2018content}. Concretely, Cryo-CARE
 is an implementation of Noise2Noise (N2N) \cite{lehtinen2018noise2noise}.
@@ -290,75 +374,6 @@ having more noisy instances, after averaing all the denoised volumes.
 \section{2D-RSVD (2D Random Shuffing Volume Denoising}
 
 \section{3D-RSVD (3D Random Shuffling Volume Denoising}
-
-\section{Metrics}
-
-The following metrics have been used to compare the noisy (original)
-volume and the denoised volume.
-
-\subsection{\href{https://en.wikipedia.org/wiki/Mean_squared_error}{MSE (Mean
-    Squared Error)}}
-
-Having two volumes $\mathbf{X}$ and $\mathbf{Y}$,
-\begin{equation}
-  \text{MSE}(\mathbf{X},\mathbf{Y}) = \frac{1}{N}\sum_{i=1}^N(\mathbf{X}_i - \mathbf{Y}_i)^2,
-\end{equation}
-where $N$ is the number of samples in one of the volumes (that must
-have the same number of samples).
-
-\subsection{\href{https://en.wikipedia.org/wiki/Structural_similarity_index_measure}{SSIM
-    (Structural Similarity Index Measure)}}
-
-After splitting the volume into $M$ non overlapped sub-vols,
-\begin{equation}
-  \text{SSIM}(\mathbf{X}, \mathbf{Y}) := \frac{1}{N} \sum_{i=1}^N \frac{(2\overline{\mathbf{x}}_i \overline{\mathbf{y}}_i + c_1)(2\sigma_{\mathbf{x}_i \mathbf{y}_i} + c_2)}{(\overline{\mathbf{x}_i^2} + \overline{\mathbf{y}_i^2} + c_1)(\sigma^2_{\mathbf{x}_i} + \sigma^2_{\mathbf{y}_i} + c_2)},
-\end{equation}
-where $\overline{x}i$ is the mean of the $i$-th sub-vol of
-$\mathbf{X}$, $\sigma^2_{\mathbf{x}_i}$ is its variance (equivalently
-for $\mathbf{Y}$), $\sigma_{\mathbf{x}_i\mathbf{y}_i}$ is the
-covariance of both sub-vols, $c_1=(k_1L) ²$, $c_2=(k_2L) 2$ are two
-variables to stabilize the division with weak denominator, $L$ is the
-dynamic range of the voxel values, with constants with default vales
-$K_1=0.01$ , and $k_2=0.03$, and where the default size of the local
-sub-vols is $7\times 7\times 7$.
-
-\subsection{\href{https://en.wikipedia.org/wiki/Pearson_correlation_coefficient}{PPC
-    (Pearson Correlation Coefficient)}}
-The PPC is given by
-\begin{equation}
-  \text{PPC}(\mathbf{X}, \mathbf{Y}) := \frac{\sum_i(\mathbf{X}_i - \overline{\mathbf{X}})(\mathbf{Y}_i - \overline{\mathbf{Y}})}{\sqrt{\sum_i (\mathbf{X}_i - \overline{\mathbf{X}})^2 \sum_i (\mathbf{Y}_i - \overline{\mathbf{Y}})^2}}
-\end{equation}
-
-\subsection{FSC (Fourier Shell Correlation) curve}
-The FSC curve is a measure of the similarity between two 3D volumes
-represented in the Fourier domain \cite{verbeke2024self}. Each point
-of the curve prepresents the correlation between two ``shells'' of
-Fourier coefficients of both volumes. An advantage of the FSC over
-other similarity metrics such as the MSE, the SSIM and the PPC is that
-FSC values depend on the frequency, and this can be interesting in
-some scenarios, such as microscopy, where the resolution of the
-microscope if finite and known.
-
-A FSC value of the FSC curve is determined by~\cite{verbeke2024self}
-\begin{equation}
-\text{FSC}(\mathbf{X}, \mathbf{Y}; r) := \frac{\sum_{i \in S_r} (\mathcal{F}(\mathbf{X)}_i \mathcal{F}(\mathbf{Y)}_i^*)}{\sqrt{\sum_{i \in S_r} |\mathcal{F}(\mathbf{X})_i|^2 \sum_{i \in S_r} |\mathcal{F}(\mathbf{Y})_i|^2}},
-\end{equation}
-where $i=(x, y, z)$ is a point (a coefficient in the Fourier domain)
-of the surface of the sphere $S_r$ defined by $x^2+y^2+z^2=r^2$,
-$\mathcal{F}(\cdot)$ is the Fourier transform of $\cdot$, and
-$\cdot^*$ denotes the complex conjugate of $\cdot$.
-
-In some fields such ashsingle particle electron cryo-microscopy
-(cryo-EM), the FSC curve has become the universal resolution metric
-and is used to assess the quality of a 3-D reconstruction
-\cite{rosenthal2003optimal,scheres2012prevention}.
-
-It is possible to compute the Self FSC (SFSC) by subsampling the data
-\cite{koho2019fourier}, for example, splitting the volume in odd and
-even slices, in each dimension (resulting a total of 6 subvolumes),
-computing the FSC and averaging the correlations
-\cite{verbeke2024self}. Another approach can split the data into two
-random half volumes \cite{verbeke2024self}.
 
 
 \bibliographystyle{plain}
