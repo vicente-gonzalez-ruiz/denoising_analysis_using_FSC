@@ -85,7 +85,7 @@ SIN models, also called additive noise models, are defined by
 
 Some examples of SIN are:
 \begin{enumerate}
-\item \textbf{Quantization noise}, that is usually modeled as
+\item \textbf{Quantization noise}, that is usually modeled as additive
   zero-mean uniform
   noise\footnote{\url{https://github.com/vicente-gonzalez-ruiz/denoising_analysis_using_FSC/tree/main/figs/average_denoising.ipynb}}
   (${\mathbf N}\sim{\mathcal U}(c)$) with PDF (Probability Density
@@ -101,8 +101,9 @@ Some examples of SIN are:
   noise. Notice that in this case,
   $\overline{\mathbf{N}}^{(i)}=0$ and therefore,
   $\overline{\mathbf N}={\mathbf 0}$.
-\item \textbf{Thermal noise}, generally modeled as zero-mean Gaussian noise
-  (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, with PDF defined by
+\item \textbf{Thermal noise}, generally modeled as additive zero-mean
+  Gaussian noise (${\mathbf N}\sim{\mathcal N}(\mu=0,\sigma^2)$, with
+  PDF defined by
   \begin{equation}
     f(x; \sigma) = \Pr({\mathbf N}^{(i)}_j{=}x) = \frac 1 {\sigma\sqrt{2\pi}} e^{-\frac{x^2}{2\sigma^2} },
   \end{equation}
