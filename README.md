@@ -1,2 +1,1 @@
-# Microscopy Volume Denoising
-
+# Signal denoising analysis
